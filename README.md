@@ -1,4 +1,17 @@
-# Servidor MCP de referencia · Asixto Gateway
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./assets/asixto-logo-dark.svg">
+    <img src="./assets/asixto-logo.svg" alt="Asixto" height="56">
+  </picture>
+</p>
+
+<h1 align="center">Servidor MCP de referencia · Asixto Gateway</h1>
+
+<p align="center">
+  <a href="https://modelcontextprotocol.io/specification/2026-07-28"><img alt="MCP 2026-07-28" src="https://img.shields.io/badge/MCP-2026--07--28-302f80"></a>
+  <a href="./LICENSE"><img alt="Licencia MIT" src="https://img.shields.io/badge/licencia-MIT-35b6ea"></a>
+  <img alt="Node 20 o superior" src="https://img.shields.io/badge/node-%E2%89%A520-302f80">
+</p>
 
 Implementación mínima y **ejecutable** del contrato que debe cumplir su servidor para que los
 agentes de IA de Asixto —chat omnicanal y llamadas telefónicas— puedan leer y escribir en sus
