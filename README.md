@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./assets/asixto-logo-dark.svg">
-    <img src="./assets/asixto-logo.svg" alt="Asixto" height="56">
+    <source media="(prefers-color-scheme: dark)" srcset="./assets/asixto-gateway-dark.svg">
+    <img src="./assets/asixto-gateway.svg" alt="Asixto Gateway" width="320">
   </picture>
 </p>
 
