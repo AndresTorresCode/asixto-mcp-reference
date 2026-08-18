@@ -28,8 +28,8 @@ import type { CallToolResult } from '@modelcontextprotocol/server';
  * ─────────────────────────────────────────────────────────────────────────────────────────
  *
  * ESTA IMPLEMENTACIÓN ES DE EJEMPLO: vive en memoria y se pierde al reiniciar. En producción
- * use Redis (`SET NX` + TTL) o un índice único, con escritura ATÓMICA —nunca `get` seguido de
- * `set` sin transacción— y TTL ≥ 7 días.
+ * use Redis (`SET NX` + TTL) o un índice único, con escritura ATÓMICA (nunca `get` seguido de
+ * `set` sin transacción) y TTL ≥ 7 días.
  */
 
 const TTL_MS = 7 * 24 * 60 * 60 * 1000;

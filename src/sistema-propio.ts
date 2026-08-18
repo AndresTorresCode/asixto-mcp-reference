@@ -1,5 +1,5 @@
 /**
- * SIMULACIÓN DEL SISTEMA DEL CLIENTE — es lo único que hay que reemplazar.
+ * SIMULACIÓN DEL SISTEMA DEL CLIENTE: es lo único que hay que reemplazar.
  *
  * Aquí van las llamadas a SU backend, SU ERP o SU base de datos. El resto del repo
  * (protocolo, autenticación, idempotencia, errores) ya cumple el contrato de Asixto y

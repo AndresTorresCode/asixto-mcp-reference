@@ -8,7 +8,7 @@ import { sistemaPropio } from '../sistema-propio.ts';
  * NIVEL 1 · Catálogo con paginación y precio resuelto.
  *
  * Muestra tres cosas del contrato que se pasan por alto:
- *   1. `limit` es OPCIONAL y por eso admite `null` — si declarara `"type": "integer"` a secas,
+ *   1. `limit` es OPCIONAL y por eso admite `null`: si declarara `"type": "integer"` a secas,
  *      el día que el modelo mande `null` el proveedor devuelve 400 y el agente se queda sin
  *      responder a mitad de la conversación.
  *   2. El precio sale de la lista que envía el Gateway en `_meta`, no del precio por defecto.

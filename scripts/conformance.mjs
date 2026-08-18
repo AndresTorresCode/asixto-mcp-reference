@@ -207,7 +207,7 @@ function imprimir() {
 
   for (const r of resultados) {
     const icono = r.ok ? '✓' : r.nivel === 'BLOQUEANTE' ? '✗' : '!';
-    console.log(`${icono} ${r.titulo}${r.detalle ? ` — ${r.detalle}` : ''}`);
+    console.log(`${icono} ${r.titulo}${r.detalle ? `: ${r.detalle}` : ''}`);
   }
 
   console.log(
