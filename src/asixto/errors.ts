@@ -4,7 +4,7 @@ import type { CallToolResult } from '@modelcontextprotocol/server';
  * Los SEIS tipos de error canónicos del contrato de Asixto. No hay más:
  * cualquier otro valor se trata como `UNKNOWN`.
  *
- * Contrato: https://asixto.com/docs/06-errors
+ * Contrato: https://gateway.asixto.com/docs/06-errors
  */
 export const ERROR_TYPES = ['BLOCKER', 'NOT_FOUND', 'VALIDATION', 'PERMISSION', 'SYSTEM', 'UNKNOWN'] as const;
 

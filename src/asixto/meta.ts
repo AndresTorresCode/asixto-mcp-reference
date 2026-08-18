@@ -6,7 +6,7 @@ import type { ServerContext } from '@modelcontextprotocol/server';
  * Van en `_meta` y NO en los argumentos, así que su `inputSchema` puede seguir cerrado
  * (`additionalProperties: false`) sin rechazarlos.
  *
- * Contrato: https://asixto.com/docs/02-tool-contract
+ * Contrato: https://gateway.asixto.com/docs/02-tool-contract
  */
 export type AsixtoMeta = {
   /** Clave determinista por operación lógica. Obligatoria de honrar en toda escritura. */
@@ -25,6 +25,8 @@ export type AsixtoMeta = {
   currency?: string;
   /** Zona horaria del tenant, p. ej. `America/Bogota`. */
   timezone?: string;
+  /** Idioma de atención del tenant en BCP 47, p. ej. `es-CO`. Los textos legibles van en él. */
+  locale?: string;
 };
 
 const KEY = 'com.asixto/';
@@ -53,6 +55,7 @@ export function asixtoMeta(ctx: ServerContext): AsixtoMeta {
     priceListId: read('priceListId') ?? null,
     currency: read('currency'),
     timezone: read('timezone'),
+    locale: read('locale'),
   };
 }
 

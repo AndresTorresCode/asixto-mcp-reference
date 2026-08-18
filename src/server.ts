@@ -14,7 +14,7 @@ import { verificadorDeTokens } from './auth.ts';
  * Un endpoint POST sin estado, autenticación por bearer y tres herramientas de ejemplo
  * (dos de lectura, una de escritura con idempotencia).
  *
- * Contrato completo: https://asixto.com/docs
+ * Contrato completo: https://gateway.asixto.com/docs
  *
  * ─────────────────────────────────────────────────────────────────────────────────────
  * POR QUÉ `createMcpHandler` + `toNodeHandler` Y NO EL TRANSPORTE A MANO
@@ -41,7 +41,7 @@ function construirServidor(): McpServer {
   // Lectura (R)
   registrarConsultarCliente(server);
   registrarBuscarItems(server);
-  // Escritura: crear (C), actualizar (U) y cancelar — la única «D» del contrato
+  // Escritura: crear (C), actualizar (U) y cancelar, la única «D» del contrato
   registrarAbrirCaso(server);
   registrarActualizarCliente(server);
   registrarCancelarCita(server);
@@ -53,7 +53,7 @@ const app = createMcpExpressApp();
 const handler = createMcpHandler(() => construirServidor());
 
 // Sin `ASIXTO_TOKENS` el servidor arranca abierto: cómodo para el primer arranque y para el
-// Inspector. NUNCA en producción — la certificación de Asixto exige 401 sin credencial.
+// Inspector. NUNCA en producción: la certificación de Asixto exige 401 sin credencial.
 if (AUTH_ACTIVA) {
   app.use('/mcp', requireBearerAuth({ verifier: verificadorDeTokens(TOKENS), requiredScopes: ['mcp:tools'] }));
 } else {
@@ -64,7 +64,7 @@ const nodeHandler = toNodeHandler(handler, { onerror: (error) => console.error('
 
 // `createMcpExpressApp` ya parseó el JSON, así que hay que pasarle el cuerpo YA PARSEADO.
 // Si se monta como `app.post('/mcp', nodeHandler)`, Express le pasa `next` como tercer
-// argumento —que el adaptador ignora— y el stream ya consumido produce
+// argumento (que el adaptador ignora) y el stream ya consumido produce
 // «Parse error: Invalid JSON». Medido.
 app.post('/mcp', (req, res) => {
   void nodeHandler(req, res, req.body);

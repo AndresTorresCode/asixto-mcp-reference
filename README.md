@@ -14,12 +14,12 @@
 </p>
 
 Implementación mínima y **ejecutable** del contrato que debe cumplir su servidor para que los
-agentes de IA de Asixto —chat omnicanal y llamadas telefónicas— puedan leer y escribir en sus
+agentes de IA de Asixto puedan leer y escribir en sus
 sistemas.
 
 No es pseudocódigo: arranca, responde y pasa la verificación de conformidad tal cual está.
 
-- Contrato completo: **https://asixto.com/docs**
+- Contrato completo: **https://gateway.asixto.com/docs**
 - Protocolo: [Model Context Protocol](https://modelcontextprotocol.io), revisión `2026-07-28`
   (Streamable HTTP, sin estado)
 
