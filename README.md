@@ -40,6 +40,17 @@ npm run conformance -- http://localhost:8080/mcp un-token-largo-y-aleatorio
 
 La verificación debe terminar en **0 bloqueantes**. Ese es el criterio de aceptación.
 
+**La verificación es de solo lectura por omisión.** La comprobación de idempotencia (garantía 1) es
+la única que ejecuta una herramienta de escritura, y lo hace dos veces con la misma clave. Para
+correrla hay que pedirlo:
+
+```bash
+npm run conformance -- https://su-servidor/mcp su-token --allow-writes
+```
+
+Apúntela a su **entorno de pruebas**: sin la bandera, «0 bloqueantes» no significa que la
+idempotencia esté verificada, y el veredicto final se lo dice con esas palabras.
+
 ## Qué hay que cambiar
 
 Una sola cosa: **`src/sistema-propio.ts`**. Es la simulación de su backend; ahí van las llamadas
@@ -56,7 +67,7 @@ El resto ya cumple el contrato y normalmente no se toca:
 | `src/asixto/idempotency.ts` | Idempotencia por clave (garantía 1) |
 | `scripts/conformance.mjs` | Verificación local. Úsela en su pipeline |
 
-## Las tres herramientas de ejemplo
+## Las cinco herramientas de ejemplo
 
 Están en el orden en que conviene construir las suyas:
 

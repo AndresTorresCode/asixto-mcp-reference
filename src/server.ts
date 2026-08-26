@@ -11,8 +11,9 @@ import { verificadorDeTokens } from './auth.ts';
 /**
  * Servidor MCP de referencia para Asixto Gateway.
  *
- * Un endpoint POST sin estado, autenticación por bearer y tres herramientas de ejemplo
- * (dos de lectura, una de escritura con idempotencia).
+ * Un endpoint POST sin estado, autenticación por bearer y cinco herramientas de ejemplo: dos de
+ * lectura, dos de escritura con idempotencia y la única operación de tipo borrado del contrato
+ * (cancelar una cita, con `destructiveHint`).
  *
  * Contrato completo: https://gateway.asixto.com/docs
  *

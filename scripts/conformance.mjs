@@ -5,9 +5,17 @@
  * Corre contra CUALQUIER servidor MCP, no solo contra este ejemplo: apúntelo a su servidor
  * y úselo en su pipeline antes de cada despliegue.
  *
- *   node scripts/conformance.mjs http://localhost:8099/mcp [token]
+ *   node scripts/conformance.mjs http://localhost:8099/mcp [token] [--allow-writes]
  *
  * Sale con código 1 si falla una comprobación BLOQUEANTE. Los avisos no rompen el pipeline.
+ *
+ * SOLO LECTURA POR OMISIÓN. La comprobación de idempotencia (garantía 1) es la única que EJECUTA
+ * una herramienta de escritura, y lo hace dos veces con la misma clave. Sin `--allow-writes` no se
+ * corre: apuntar esta verificación a un entorno de producción por descuido no puede crear un
+ * registro real en el sistema de nadie. Con la bandera, apúntelo a su entorno de pruebas.
+ *
+ * Consecuencia declarada: sin la bandera, «0 bloqueantes» NO significa que la idempotencia esté
+ * verificada, y el veredicto final lo dice con esas palabras.
  *
  * Es el subconjunto que se puede verificar sin conversar con el agente: protocolo, esquemas,
  * clasificación, autenticación, forma del error e idempotencia. La certificación completa
@@ -15,7 +23,10 @@
  * Asixto contra su entorno de pruebas.
  */
 
-const [, , URL_ARG, TOKEN] = process.argv;
+const ARGS = process.argv.slice(2);
+/** Ejecutar la herramienta de escritura de la garantía 1. Sin esto, la verificación no muta nada. */
+const PERMITE_ESCRITURAS = ARGS.includes('--allow-writes');
+const [URL_ARG, TOKEN] = ARGS.filter((argumento) => !argumento.startsWith('--'));
 const URL_MCP = URL_ARG ?? 'http://localhost:8099/mcp';
 
 const CAPACIDADES = new Set([
@@ -164,7 +175,14 @@ async function main() {
 
   // 4 · Idempotencia: la misma clave dos veces debe producir el mismo resultado.
   const escritura = tools.find((tool) => tool.annotations?.readOnlyHint === false);
-  if (escritura) {
+  if (escritura && !PERMITE_ESCRITURAS) {
+    // No es un fallo del servidor: es esta verificación negándose a escribir sin permiso explícito.
+    aviso(
+      false,
+      'Idempotencia NO verificada (modo solo lectura)',
+      `añada --allow-writes para ejercitarla sobre «${escritura.name}», apuntando a su entorno de pruebas`
+    );
+  } else if (escritura) {
     console.log(`  (idempotencia probada sobre «${escritura.name}»)\n`);
     const clave = `conformance-${Date.now()}`;
     const args = ejemploDeArgumentos(escritura.inputSchema);
@@ -219,6 +237,13 @@ function imprimir() {
     process.exit(1);
   }
 
+  if (!PERMITE_ESCRITURAS) {
+    console.log(
+      '\nApto para la certificación de Asixto (subconjunto local) — con la IDEMPOTENCIA SIN VERIFICAR.'
+    );
+    console.log('Repita con --allow-writes contra su entorno de pruebas para cerrar la garantía 1.');
+    return;
+  }
   console.log('\nApto para la certificación de Asixto (subconjunto local).');
 }
 
