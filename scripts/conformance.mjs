@@ -48,7 +48,7 @@ const anotar = (nivel, ok, titulo, detalle = '') => resultados.push({ nivel, ok,
 const bloqueante = (ok, titulo, detalle) => anotar('BLOQUEANTE', ok, titulo, detalle);
 const aviso = (ok, titulo, detalle) => anotar('AVISO', ok, titulo, detalle);
 
-async function rpc(method, params = {}, { token = TOKEN, name = '-' } = {}) {
+async function rpc(method, params = {}, { token = TOKEN, name = '-', legacy = false } = {}) {
   const respuesta = await fetch(URL_MCP, {
     method: 'POST',
     headers: {
@@ -62,7 +62,9 @@ async function rpc(method, params = {}, { token = TOKEN, name = '-' } = {}) {
       jsonrpc: '2.0',
       id: Math.random().toString(36).slice(2),
       method,
-      params: { ...params, _meta: { ...ENVELOPE, ...(params._meta ?? {}) } },
+      // En modo legacy NO va el sobre moderno: un servidor de la revisión anterior espera la versión y
+      // la identidad del cliente dentro de `params`, que es lo que hacía el saludo de inicialización.
+      params: legacy ? { ...params } : { ...params, _meta: { ...ENVELOPE, ...(params._meta ?? {}) } },
     }),
   });
 
@@ -108,13 +110,54 @@ async function main() {
     aviso(false, 'Autenticación no verificada', 'no se pasó token: pase uno como segundo argumento');
   }
 
-  // 2 · Descubrimiento.
+  // 2 · Descubrimiento y ERA del protocolo.
+  //
+  // Asixto admite las DOS eras que define la especificación, y por eso esta comprobación no exige la
+  // revisión nueva: exige que el servidor sea COHERENTE con una de ellas.
+  //
+  //   · modern  — `server/discover` anuncia `supportedVersions` con 2026-07-28. Es lo recomendado: la
+  //               versión y las capacidades viajan por petición y no hay estado de sesión.
+  //   · legacy  — responde al saludo `initialize` con una revisión que soporta (2025-11-25 o anterior).
+  //               Se acepta: el Gateway fija la era de su servidor al darlo de alta y le habla en la
+  //               que corresponda.
+  //
+  // Lo que NO se acepta es ninguna de las dos, porque entonces no hay forma de acordar qué se habla.
+  // Y ojo con el caso intermedio: un servidor que responde `server/discover` con el CUERPO de
+  // `initialize` es legacy, aunque el nombre del método sugiera lo contrario. Por eso se mira el
+  // contenido de la respuesta y no que el método exista.
   const discover = await rpc('server/discover');
   const versiones = discover.json?.result?.supportedVersions ?? [];
+  const esModerno = Array.isArray(versiones) && versiones.includes('2026-07-28');
+  let era = esModerno ? 'modern' : null;
+  let revisionLegacy = null;
+
+  if (!esModerno) {
+    const saludo = await rpc(
+      'initialize',
+      {
+        protocolVersion: '2025-06-18',
+        capabilities: {},
+        clientInfo: { name: 'asixto-conformance', version: '1.0.0' },
+      },
+      { legacy: true }
+    );
+    revisionLegacy = saludo.json?.result?.protocolVersion ?? null;
+    if (typeof revisionLegacy === 'string' && revisionLegacy.length > 0) era = 'legacy';
+  }
+
   bloqueante(
-    Array.isArray(versiones) && versiones.includes('2026-07-28'),
-    'server/discover anuncia la revisión 2026-07-28',
-    discover.json?.error?.message ?? `versiones: ${JSON.stringify(versiones)}`
+    era !== null,
+    'El servidor declara una era de protocolo coherente (modern o legacy)',
+    era === null
+      ? `server/discover sin supportedVersions (${JSON.stringify(versiones)}) y sin respuesta a initialize`
+      : `era detectada: ${era}${era === 'legacy' ? ` · revisión ${revisionLegacy}` : ''}`
+  );
+  aviso(
+    esModerno,
+    'La era es la RECOMENDADA (modern, revisión 2026-07-28)',
+    era === 'legacy'
+      ? `su servidor sirve la revisión ${revisionLegacy}: compatible, y Asixto registra la era al darlo de alta`
+      : ''
   );
 
   // 3 · Catálogo.
@@ -199,7 +242,7 @@ async function main() {
     aviso(false, 'Idempotencia no verificada', 'ninguna herramienta de escritura en el catálogo');
   }
 
-  imprimir();
+  imprimir(era);
 }
 
 /** Argumentos sintéticos a partir del esquema, para poder invocar sin conocer el dominio. */
@@ -219,7 +262,7 @@ function ejemploDeArgumentos(esquema) {
   return salida;
 }
 
-function imprimir() {
+function imprimir(era = null) {
   const fallos = resultados.filter((r) => r.nivel === 'BLOQUEANTE' && !r.ok);
   const avisos = resultados.filter((r) => r.nivel === 'AVISO' && !r.ok);
 
@@ -231,6 +274,9 @@ function imprimir() {
   console.log(
     `\n${resultados.filter((r) => r.ok).length} correctas · ${fallos.length} bloqueantes · ${avisos.length} avisos`
   );
+  // La era es el dato que hay que darle a Asixto al registrar el servidor: con ella el Gateway sabe en
+  // qué revisión hablarle, en vez de deducirla en caliente.
+  if (era) console.log(`Era de protocolo detectada: ${era.toUpperCase()} — decláresela a Asixto al dar de alta el servidor.`);
 
   if (fallos.length > 0) {
     console.error('\nNo apto para certificación: corrija las bloqueantes.');
