@@ -29,6 +29,11 @@ const PERMITE_ESCRITURAS = ARGS.includes('--allow-writes');
 const [URL_ARG, TOKEN] = ARGS.filter((argumento) => !argumento.startsWith('--'));
 const URL_MCP = URL_ARG ?? 'http://localhost:8099/mcp';
 
+// Escenarios en los que Asixto puede exponer una herramienta suya. La autoridad es el RUNTIME que gatea
+// por capacidad (`asixto-ia`, `CAPABILITY_TOOLS`), no el catálogo de configuración del backend: esta lista
+// tiene que aceptar todo lo que el runtime sabe clasificar, `general` —el cubo de reserva del
+// clasificador— incluido. Quitarlo deja al integrador con una clave que su verificación rechaza y el
+// runtime sí atiende (invariante `gateway_scenario_keys_complete` del orquestador).
 const CAPACIDADES = new Set([
   'actualizacion_datos', 'agenda', 'busqueda_web', 'cambio_plan', 'cancelacion', 'consulta_estado',
   'emergencia', 'encuestas_satisfaccion', 'facturacion', 'felicitacion', 'garantia', 'general',
@@ -102,9 +107,13 @@ async function main() {
       'Sin credencial responde 401',
       `recibido ${sinCredencial.status}`
     );
-    aviso(
+    // Bloqueante, no aviso: RFC 9110 §15.5.2 y RFC 6750 §3 lo exigen (MUST) y la página 08 de Asixto
+    // publica esta fila como bloqueante. Un aviso aquí aprobaba a un servidor que la certificación
+    // suspende, que es la divergencia peor de esta herramienta.
+    bloqueante(
       (sinCredencial.headers.get('www-authenticate') ?? '').toLowerCase().includes('bearer'),
-      'El 401 incluye la cabecera WWW-Authenticate'
+      'El 401 incluye la cabecera WWW-Authenticate',
+      `recibido «${sinCredencial.headers.get('www-authenticate') ?? '(ausente)'}»`
     );
   } else {
     aviso(false, 'Autenticación no verificada', 'no se pasó token: pase uno como segundo argumento');
